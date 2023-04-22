@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="Zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <title>加密恶意流量监测平台</title>
+</head>
+
+<body>
+<div id="app">
+    <template>
+        <el-container>
+            <el-header>
+                <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+                    <el-menu-item index="1">首页</el-menu-item>
+                    <el-submenu index="2">
+                        <template slot="title">流量分析</template>
+                        <el-menu-item index="2-1">选项1</el-menu-item>
+                        <el-menu-item index="2-2">选项2</el-menu-item>
+                        <el-menu-item index="2-3">选项3</el-menu-item>
+                    </el-submenu>
+                    <el-menu-item index="3"><a href="https://www.ele.me" target="_blank">订单管理</a></el-menu-item>
+                </el-menu>
+                <div class="line"></div>
+            </el-header>
+            <el-container>
+                <el-aside class="aside" width="200px">
+                    <el-card class="box-card">
+                        <div slot="header" class="clearfix">
+                            <span>操作说明</span>
+                        </div>
+                        <div>
+                            1. 选择文件
+                        </div>
+                        <div class="line">
+                            2.上传文件
+                        </div>
+                    </el-card>
+                </el-aside>
+                <el-container>
+                    <el-main class="main">
+                        <el-card class="box-card">
+                            <div slot="header" class="clearfix">
+                                <span><i class="el-icon-upload"></i>请上传pcap流量文件</span>
+                            </div>
+                            <div class="upload">
+                                <el-upload
+                                        drag
+                                        class="upload-demo"
+                                        action="%% url_for('detection') %%"
+                                        :on-success="uploadSuccess"
+                                        :on-error="uploadError"
+                                        :on-preview="handlePreview"
+                                        :on-remove="handleRemove"
+                                        :on-change="handleChange"
+                                        :before-remove="beforeRemove"
+                                        multiple
+                                >
+                                    <i class="el-icon-upload"></i>
+                                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                                    <div slot="tip" class="el-upload__tip">上传pcap文件，且不超过10Mb</div>
+                                </el-upload>
+                            </div>
+                        </el-card>
+                        <el-card class="box-card">
+                            <div slot="header" class="clearfix">
+                                <span><i class="el-icon-upload"></i>检测结果</span>
+                            </div>
+                            <div class="pic">
+                                <img src="../static/images/OIG.jpg" alt="">
+                            </div>
+                            <el-alert v-if="safe === 'safe'"
+                                      title="安全的流量"
+                                      type="success"
+                                      show-icon
+                                      center>
+                            </el-alert>
+                            <el-alert v-else-if="safe === 'unsafe'"
+                                      title="不安全的流量"
+                                      type="error"
+                                      show-icon
+                                      center>
+                            </el-alert>
+                            <el-alert v-else-if="safe === 'invalid'"
+                                      title="文件数据量太大"
+                                      type="info"
+                                      show-icon
+                                      center>
+                            </el-alert>
+                        </el-card>
+                    </el-main>
+                    <el-footer>
+                        <div class="footer">
+                            加密恶意流量检测平台@2023
+                        </div>
+                    </el-footer>
+                </el-container>
+            </el-container>
+        </el-container>
+    </template>
+</div>
+
+
+</body>
+<link rel="stylesheet" href="../static/plugins/element-ui/index.css">
+<script src="../static/plugins/vue2/vue.js"></script>
+<script src="../static/plugins/element-ui/index.js"></script>
+<script type="application/javascript">
+    var app = new Vue({
+        el: '#app',
+        data() {
+            return {
+                activeIndex: '1',
+                activeIndex2: '1',
+                fileList: [],
+                safe: "",
+            };
+        },
+        methods: {
+            handleSelect(key, keyPath) {
+                console.log(key, keyPath);
+            },
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+            },
+            handlePreview(file) {
+                console.log(file);
+            },
+            handleExceed(files, fileList) {
+                this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+            },
+            handleChange(file, fileList) {
+                console.log(file, fileList);
+                while (fileList.length > 1) {
+                    fileList.shift();
+                }
+            },
+            beforeRemove(file, fileList) {
+                return this.$confirm(`确定移除 ${file.name}？`);
+            },
+            uploadSuccess(response, file, fileList) {
+                console.log(response);
+                if (response.status === 'success') {
+                    if (response.message === 'The file is safe')
+                        this.safe = 'safe';
+                    else
+                        this.safe = 'unsafe';
+                } else {
+                    this.safe = 'invalid';
+                }
+            },
+            uploadError() {
+              this.safe = 'invalid';
+            },
+        },
+        created: function () {
+            console.log('created');
+        }
+    })
+
+
+</script>
+<style type="text/css">
+    #app {
+
+    }
+
+    .aside {
+        padding: 20px 40px 0 20px;
+        background-color: #fff;
+    }
+
+    .main {
+        min-height: 80vh;
+        padding: 20px 0 40px 0;
+        background-color: #fff;
+
+    }
+
+    .upload {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pic {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .pic img {
+        width: 20%;
+    }
+
+    .footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .box-card {
+        margin-top: 20px;
+    }
+</style>
+</html>
